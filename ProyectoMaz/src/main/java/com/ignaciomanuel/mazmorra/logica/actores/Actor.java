@@ -4,6 +4,7 @@ import com.ignaciomanuel.mazmorra.logica.Celda;
 
 public abstract class Actor {
     protected Celda celda;
+    protected int salud; // ✅ salud agregada
 
     public Actor(Celda celda) {
         this.celda = celda;
@@ -11,7 +12,6 @@ public abstract class Actor {
     }
 
     public abstract int getVelocidad();
-
     public abstract String getNombre();
 
     public Celda getCelda() {
@@ -29,5 +29,24 @@ public abstract class Actor {
             this.celda = destino;
         }
     }
-}
 
+    // ✅ Método para recibir daño
+    public void recibirDanio(int cantidad) {
+        salud -= cantidad;
+        if (salud < 0) salud = 0;
+    }
+
+    // ✅ Método para comprobar si sigue vivo
+    public boolean estaVivo() {
+        return salud > 0;
+    }
+
+    // ✅ Getter y setter de salud por si se necesitan
+    public int getSalud() {
+        return salud;
+    }
+
+    public void setSalud(int salud) {
+        this.salud = salud;
+    }
+}

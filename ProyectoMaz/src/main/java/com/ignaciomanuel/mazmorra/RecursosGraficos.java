@@ -16,4 +16,15 @@ public class RecursosGraficos {
         imagenEnemigo = new Image("/enemigo.png");
         imagenMeta = new Image("/meta.png");
     }
+
+    public static Image getImagen(String nombre) {
+        switch (nombre) {
+            case "pared": return imagenPared;
+            case "suelo": return imagenSuelo;
+            case "protagonista": return imagenProtagonista;
+            case "enemigo": return imagenEnemigo;
+            case "meta": return imagenMeta;
+            default: return null;
+        }
+    }
 }

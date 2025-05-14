@@ -3,9 +3,10 @@ package com.ignaciomanuel.mazmorra.logica;
 import com.ignaciomanuel.mazmorra.Principal;
 import com.ignaciomanuel.mazmorra.RecursosGraficos;
 import com.ignaciomanuel.mazmorra.logica.actores.Actor;
-import com.ignaciomanuel.mazmorra.logica.actores.Enemigo;
 
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.Image;
+import javafx.scene.paint.Color;
 
 public class Celda {
     private final MapaJuego mapa;
@@ -21,65 +22,8 @@ public class Celda {
         this.tipo = tipo;
     }
 
-    public void dibujar(GraphicsContext gc) {
-        try {
-            switch (tipo) {
-                case PARED:
-                    gc.drawImage(RecursosGraficos.imagenPared, x * Principal.TAMANO_CELDA, y * Principal.TAMANO_CELDA, Principal.TAMANO_CELDA, Principal.TAMANO_CELDA);
-                    break;
-                case SUELO:
-                    gc.drawImage(RecursosGraficos.imagenSuelo, x * Principal.TAMANO_CELDA, y * Principal.TAMANO_CELDA, Principal.TAMANO_CELDA, Principal.TAMANO_CELDA);
-                    break;
-                case SALIDA:
-                    // ¿Quedan enemigos?
-                    boolean quedan = Principal.getActores().stream()
-                     .anyMatch(a -> a instanceof Enemigo);
-                    if (quedan) {
-                    // si aún hay enemigos, dibuja suelo
-                        gc.drawImage(RecursosGraficos.imagenSuelo,
-                        x * Principal.TAMANO_CELDA,
-                        y * Principal.TAMANO_CELDA,
-                        Principal.TAMANO_CELDA,
-                        Principal.TAMANO_CELDA);
-                    } else {
-                    // si no hay enemigos, dibuja la meta
-                        gc.drawImage(RecursosGraficos.imagenMeta,
-                        x * Principal.TAMANO_CELDA,
-                        y * Principal.TAMANO_CELDA,
-                         Principal.TAMANO_CELDA,
-                        Principal.TAMANO_CELDA);
-                    }
-                break;
-
-            }
-
-            if (actor != null) {
-                if ("Protagonista".equals(actor.getNombre())) {
-                    gc.drawImage(RecursosGraficos.imagenProtagonista, x * Principal.TAMANO_CELDA, y * Principal.TAMANO_CELDA, Principal.TAMANO_CELDA, Principal.TAMANO_CELDA);
-                } else if ("Enemigo".equals(actor.getNombre())) {
-                    gc.drawImage(RecursosGraficos.imagenEnemigo, x * Principal.TAMANO_CELDA, y * Principal.TAMANO_CELDA, Principal.TAMANO_CELDA, Principal.TAMANO_CELDA);
-                }
-            }
-        } catch (Exception e) {
-            System.err.println("Error al dibujar celda en (" + x + "," + y + "): " + e.getMessage());
-        }
-        
-    }
-
-    public void setTipo(TipoCelda nuevoTipo) {
-        this.tipo = nuevoTipo;
-    }
-
-    public TipoCelda getTipo() {
-        return tipo;
-    }
-
-    public Actor getActor() {
-        return actor;
-    }
-
-    public void setActor(Actor actor) {
-        this.actor = actor;
+    public Celda(TipoCelda tipo) {
+        this(null, 0, 0, tipo);
     }
 
     public int getX() {
@@ -90,7 +34,52 @@ public class Celda {
         return y;
     }
 
+    public TipoCelda getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(TipoCelda tipo) {
+        this.tipo = tipo;
+    }
+
+    public Actor getActor() {
+        return actor;
+    }
+
+    public void setActor(Actor actor) {
+        this.actor = actor;
+    }
+
     public MapaJuego getMapa() {
         return mapa;
+    }
+
+    public void dibujar(GraphicsContext gc) {
+        int px = x * Principal.TAMANO_CELDA;
+        int py = y * Principal.TAMANO_CELDA;
+
+        switch (tipo) {
+            case PARED:
+                gc.drawImage(RecursosGraficos.imagenPared, px, py, 32, 32);
+                break;
+            case SUELO:
+                gc.drawImage(RecursosGraficos.imagenSuelo, px, py, 32, 32);
+                break;
+            case SALIDA:
+                gc.drawImage(RecursosGraficos.imagenMeta, px, py, 32, 32);
+                break;
+            case TRAMPA:
+                gc.setFill(Color.RED);
+                gc.fillRect(px, py, 32, 32);
+                break;
+        }
+
+        if (actor != null) {
+            String nombre = actor.getNombre().toLowerCase();
+            Image imagenActor = RecursosGraficos.getImagen(nombre);
+            if (imagenActor != null) {
+                gc.drawImage(imagenActor, px, py, 32, 32);
+            }
+        }
     }
 }

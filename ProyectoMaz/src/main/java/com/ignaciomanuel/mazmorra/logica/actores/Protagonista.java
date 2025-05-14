@@ -9,8 +9,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 
 public class Protagonista extends Actor {
-    private final int maxSalud;   // Salud inicial máxima
-    private int salud;
+    private final int maxSalud;
     private int fuerza;
     private int defensa;
     private int velocidad;
@@ -18,29 +17,30 @@ public class Protagonista extends Actor {
     public Protagonista(Celda celda, int salud, int fuerza, int defensa, int velocidad) {
         super(celda);
         this.maxSalud = salud;
-        this.salud    = salud;
-        this.fuerza   = fuerza;
-        this.defensa  = defensa;
-        this.velocidad= velocidad;
+        this.setSalud(salud); // usa el método del padre
+        this.fuerza = fuerza;
+        this.defensa = defensa;
+        this.velocidad = velocidad;
     }
 
     // Getters
-    public int getSalud()     { return salud; }
+    public int getSalud()     { return super.getSalud(); }
     public int getFuerza()    { return fuerza; }
     public int getDefensa()   { return defensa; }
     public int getVelocidad() { return velocidad; }
     public int getMaxSalud()  { return maxSalud; }
 
     // Setters
-    public void setSalud(int salud)       { this.salud = salud; }
-    public void setFuerza(int fuerza)     { this.fuerza = fuerza; }
-    public void setDefensa(int defensa)   { this.defensa = defensa; }
-    public void setVelocidad(int velocidad){ this.velocidad = velocidad; }
+    public void setSalud(int salud)         { super.setSalud(salud); }
+    public void setFuerza(int fuerza)       { this.fuerza = fuerza; }
+    public void setDefensa(int defensa)     { this.defensa = defensa; }
+    public void setVelocidad(int velocidad) { this.velocidad = velocidad; }
 
-    /** Recibe daño y registra el evento. Panel derecho se actualiza desde Principal. */
-    public void recibirdaño(int daño) {
-        this.salud -= daño;
-        Principal.registrarEvento("💢 Protagonista recibió " + daño + " de daño. Salud restante: " + salud);
+    /** Daño recibido con mensaje visible */
+    @Override
+    public void recibirDanio(int cantidad) {
+        super.recibirDanio(cantidad);
+        Principal.registrarEvento("💢 Protagonista recibió " + cantidad + " de daño. Salud restante: " + getSalud());
     }
 
     /** Ataca a un enemigo reduciendo su salud */
@@ -49,7 +49,7 @@ public class Protagonista extends Actor {
         int daño = this.fuerza - reduccion;
         if (daño < 1) daño = 1;
 
-        enemigo.recibirdaño(daño);
+        enemigo.recibirDanio(daño);
         Principal.registrarEvento("🗡️ Protagonista ataca por " + daño + " de daño.");
         if (enemigo.getSalud() <= 0) {
             Principal.registrarEvento("🏆 ¡Enemigo derrotado!");
@@ -59,7 +59,7 @@ public class Protagonista extends Actor {
         }
     }
 
-    /** Movimiento con combate y chequeo de salida */
+    /** Movimiento con chequeo de trampa y salida */
     @Override
     public void mover(int dx, int dy) {
         int nx = celda.getX() + dx;
@@ -67,10 +67,18 @@ public class Protagonista extends Actor {
         Celda destino = celda.getMapa().getCelda(nx, ny);
         if (destino == null) return;
 
-        // Si pisa la salida
+        // Trampa
+        if (destino.getTipo() == TipoCelda.TRAMPA) {
+            this.recibirDanio(10);
+            if (!this.estaVivo()) {
+                Principal.gameOver();
+                return;
+            }
+        }
+
+        // Salida
         if (destino.getTipo() == TipoCelda.SALIDA) {
-            boolean quedan = Principal.getActores().stream()
-                              .anyMatch(a -> a instanceof Enemigo);
+            boolean quedan = Principal.getActores().stream().anyMatch(a -> a instanceof Enemigo);
             if (quedan) {
                 Principal.registrarEvento("🔒 Elimina todos los enemigos antes de usar la salida.");
             } else {
@@ -87,6 +95,7 @@ public class Protagonista extends Actor {
             return;
         }
 
+        // Movimiento o ataque
         if (destino.getTipo().esTransitable()) {
             Actor occ = destino.getActor();
             if (occ == null) {

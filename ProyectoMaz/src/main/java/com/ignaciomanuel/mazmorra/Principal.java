@@ -93,7 +93,8 @@ public class Principal extends Application {
             if (moved) {
                 redibujar();
                 turnoCount++;
-
+                
+                
                 // Turno de enemigos
                 for (Actor a : new ArrayList<>(actores)) {
                     if (a instanceof Enemigo) {

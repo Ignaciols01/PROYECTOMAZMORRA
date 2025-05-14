@@ -5,7 +5,6 @@ import com.ignaciomanuel.mazmorra.logica.Celda;
 
 public class Enemigo extends Actor {
     private final int maxSalud;
-    private int salud;
     private int fuerza;
     private int defensa;
     private int velocidad;
@@ -14,7 +13,7 @@ public class Enemigo extends Actor {
     public Enemigo(Celda celda, int salud, int fuerza, int defensa, int velocidad, int percepcion) {
         super(celda);
         this.maxSalud   = salud;
-        this.salud      = salud;
+        this.setSalud(salud); // usa el setter del padre
         this.fuerza     = fuerza;
         this.defensa    = defensa;
         this.velocidad  = velocidad;
@@ -22,7 +21,7 @@ public class Enemigo extends Actor {
     }
 
     // Getters
-    public int getSalud()      { return salud; }
+    public int getSalud()      { return super.getSalud(); }
     public int getFuerza()     { return fuerza; }
     public int getDefensa()    { return defensa; }
     public int getVelocidad()  { return velocidad; }
@@ -30,16 +29,16 @@ public class Enemigo extends Actor {
     public int getMaxSalud()   { return maxSalud; }
 
     // Setters
-    public void setSalud(int s)     { this.salud = s; }
+    public void setSalud(int s)     { super.setSalud(s); }
     public void setFuerza(int f)    { this.fuerza = f; }
     public void setDefensa(int d)   { this.defensa = d; }
     public void setVelocidad(int v) { this.velocidad = v; }
     public void setPercepcion(int p){ this.percepcion = p; }
 
-    /** Recibe daño y registra evento */
-    public void recibirdaño(int daño) {
-        this.salud -= daño;
-        Principal.registrarEvento("💢 Enemigo recibió " + daño + " de daño. Salud restante: " + salud);
+    @Override
+    public void recibirDanio(int cantidad) {
+        super.recibirDanio(cantidad);
+        Principal.registrarEvento("💢 Enemigo recibió " + cantidad + " de daño. Salud restante: " + getSalud());
     }
 
     /** Ataca al protagonista */
@@ -48,9 +47,10 @@ public class Enemigo extends Actor {
         int daño = this.fuerza - reduccion;
         if (daño < 1) daño = 1;
 
-        p.recibirdaño(daño);
+        p.recibirDanio(daño);
         Principal.registrarEvento("⚔️ Enemigo ataca por " + daño + " de daño.");
-        if (p.getSalud() <= 0) {
+
+        if (!p.estaVivo()) {
             Principal.gameOver();
         }
     }
